@@ -8,12 +8,14 @@ $sanitize_all_escapes=true;
 $fake_register_globals=false;
 //
 
-//IF ADDED ERRONEOUSLY
-$added_error_message = "This immunization information was entered into the wrong patient&apos;s record";
-
 include_once("../../globals.php");
 include_once("$srcdir/sql.inc");
 include_once("$srcdir/options.inc.php");
+
+//IF ADDED ERRONEOUSLY
+//$added_error_message = "This immunization information was entered into the wrong patient&apos;s record";
+$added_error_message = xl("Entered in Error");
+
 
 if (isset($_GET['mode'])) {
     /*
@@ -257,7 +259,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
       <table border=0 cellpadding=1 cellspacing=1>
 	  <?php
 	  	if ($isAddedError) {
-			echo "<tr><font color='red'><b>" . $added_error_message . "</b></font></tr>";
+			echo "<tr><font color='red'><b>" . text($added_error_message) . "</b></font></tr>";
 		}
 	  ?> 
 
@@ -504,7 +506,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 			$isError = $row['added_erroneously'];
 			
 			if ($isError) {
-				$tr_title = 'title="' . $added_error_message . '"';
+				$tr_title = 'title="' . attr($added_error_message) . '"';
 			} else {
 				$tr_title = "";
 			}
