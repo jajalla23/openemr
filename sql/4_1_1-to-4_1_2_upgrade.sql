@@ -329,3 +329,35 @@ CREATE TABLE IF NOT EXISTS `direct_message_log` (
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM;
 #EndIf
+
+#IfMissingColumn procedure_questions tips
+ALTER TABLE `immunizations`
+  MODIFY COLUMN administered_date datetime;
+#EndIf
+
+#IfMissingColumn procedure_questions tips
+ALTER TABLE `immunizations`
+  ADD COLUMN `amount_administered_unit` varchar(50) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn procedure_questions tips
+ALTER TABLE `immunizations`
+  ADD COLUMN `expiration_date` datetime DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn procedure_questions tips
+ALTER TABLE `immunizations`
+  ADD COLUMN `route` varchar(100) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn procedure_questions tips
+ALTER TABLE `immunizations`
+  ADD COLUMN `administration_site` varchar(100) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn procedure_questions tips
+ALTER TABLE `immunizations`
+  ADD COLUMN `added_erroneously` tinyint(1) DEFAULT 0;
+#EndIf
+
+
