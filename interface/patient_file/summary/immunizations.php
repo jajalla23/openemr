@@ -8,12 +8,14 @@ $sanitize_all_escapes=true;
 $fake_register_globals=false;
 //
 
-//IF ADDED ERRONEOUSLY
-$added_error_message = "This immunization information was entered into the wrong patient&apos;s record";
-
 include_once("../../globals.php");
 include_once("$srcdir/sql.inc");
 include_once("$srcdir/options.inc.php");
+
+//IF ADDED ERRONEOUSLY
+//$added_error_message = "This immunization information was entered into the wrong patient&apos;s record";
+$added_error_message = xl("Entered in Error");
+
 
 if (isset($_GET['mode'])) {
     /*
@@ -22,32 +24,7 @@ if (isset($_GET['mode'])) {
 	 */
 	
     //if (($_GET['mode'] == "add" && $_SESSION['added_imm_id'] != trim($_GET['id'])) || !isset($_SESSION['added_imm_id']) || $_SESSION['added_imm_id'] == '') {
-	if ($_GET['mode'] == "add") {
-    	if (strlen(trim($_GET['administered_date'])) > 0) {
-			$admin_hour = $_GET['administered_hour'];
-			
-			if ($_GET['administered_ampm'] = 'pm') {
-				$admin_hour += 12;
-			}
-			
-			$admin_date_time = new DateTime(trim($_GET['administered_date']));
-			$admin_date_time->setTime($admin_hour, trim($_GET['administered_min']), 0);
-			$string_adminDateTime = $admin_date_time->format('Y-m-d H:i:s');
-			
-		} else {
-			$admin_date_time = NULL;
-		}
-		
-		/*
-		 * Query the table for actual value. Since the unit cannot be set to foreign key. 
-		 * In case table changes, the unit stays the same
-		*/
-		$sql_drug_unit = "SELECT title " .
-						 "FROM list_options " .
-						 "WHERE list_id = 'drug_units' AND option_id = ?";
-		$result_drug_unit = sqlQuery($sql_drug_unit, array(trim($_GET['form_drug_units'])));	
-		$admin_drug_unit = $result_drug_unit['title'];
-		
+	if ($_GET['mode'] == "add") {		
         $sql = "REPLACE INTO immunizations set 
                       id = ?,
                       administered_date = if(?,?,NULL),  
@@ -71,7 +48,7 @@ if (isset($_GET['mode'])) {
 					  administration_site = ? ";
 	$sqlBindArray = array(
 	             trim($_GET['id']),
-		     $string_adminDateTime, $string_adminDateTime,
+		     trim($_GET['administered_date']), trim($_GET['administered_date']),
 		     trim($_GET['form_immunization_id']),
 		     trim($_GET['cvx_code']),
 		     trim($_GET['manufacturer']),
@@ -85,13 +62,14 @@ if (isset($_GET['mode'])) {
 		     $_SESSION['authId'],
 		     $_SESSION['authId'],
 			 trim($_GET['immuniz_amt_adminstrd']),
-			 $admin_drug_unit,
+			 trim($_GET['form_drug_units']),
 			 trim($_GET['immuniz_exp_date']), trim($_GET['immuniz_exp_date']),
 			 trim($_GET['immuniz_route']),
 			 trim($_GET['immuniz_admin_ste'])			 
 		     );
         sqlStatement($sql,$sqlBindArray);
-        $administered_date=$education_date=date('Y-m-d');
+        $administered_date=date('Y-m-d H:i');
+		$education_date=date('Y-m-d');
         $immunization_id=$cvx_code=$manufacturer=$lot_number=$administered_by_id=$note=$id="";
         $administered_by=$vis_date="";
 		
@@ -119,18 +97,12 @@ if (isset($_GET['mode'])) {
         $result = sqlQuery($sql, array($_GET['id']));
 		
 		$administered_date_time = strtotime($result['administered_date']);
-		$administered_date = date('Y-m-d', $administered_date_time);
-		$administered_hour = date('h', $administered_date_time);
-		$administered_min = date('i', $administered_date_time);
-		$administered_ampm = date('a', $administered_date_time);
+		$administered_date = date('Y-m-d H:i', $administered_date_time);
 		
 		$immuniz_amt_adminstrd = $result['amount_administered'];
 		
-		$sql_drug_unit = "SELECT option_id " .
-						 "FROM list_options " .
-						 "WHERE list_id = 'drug_units' AND title = ?";
-		$result_drug_unit_label = sqlQuery($sql_drug_unit, array(trim($result['amount_administered_unit'])));
-		$drugunitselecteditem = $result_drug_unit_label['option_id'];					 
+		$drugunitselecteditem = $result['amount_administered_unit'];
+							 
 		
         $immunization_id = $result['immunization_id'];
 		
@@ -257,7 +229,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
       <table border=0 cellpadding=1 cellspacing=1>
 	  <?php
 	  	if ($isAddedError) {
-			echo "<tr><font color='red'><b>" . $added_error_message . "</b></font></tr>";
+			echo "<tr><font color='red'><b>" . text($added_error_message) . "</b></font></tr>";
 		}
 	  ?> 
 
@@ -294,45 +266,14 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
               <?php echo htmlspecialchars( xl('Date & Time Administered'), ENT_NOQUOTES); ?>            </span>          </td>
           <td><table border="0">
      <tr>
-       <td><input type='text' size='10' name="administered_date" id="administered_date"
-    value='<?php echo $administered_date ? htmlspecialchars( $administered_date, ENT_QUOTES) : date('Y-m-d'); ?>'
-    title='<?php echo htmlspecialchars( xl('yyyy-mm-dd'), ENT_QUOTES); ?>'
-    onKeyUp='datekeyup(this,mypcc)' onBlur='dateblur(this,mypcc);'
-    />
-         <img src='<?php echo $rootdir; ?>/pic/show_calendar.gif' align='absbottom' width='24' height='22'
-    id='img_administered_date' border='0' alt='[?]' style='cursor:pointer;cursor:hand'
-    title='<?php echo htmlspecialchars( xl('Click here to choose a date'), ENT_QUOTES); ?>'></td>
-       <td>&nbsp;</td>
-       <td><?php echo xlt('Time'); ?></td>
-       <td>
-	   	<!--<input id='administered_hour' type='text' size='2' name='administered_hour' value='<?php //echo date("h") ?>'
-    		title='<?php //echo xla('Event start time'); ?>' />--> 
-		<input id='administered_hour' type='text' size='2' name='administered_hour' 
-			value='<?php echo $administered_hour ? htmlspecialchars( $administered_hour, ENT_QUOTES) :  date("h"); ?>'
-    		title='<?php echo xla('Event start time hour'); ?>' /> 
-		:
-   		<input id='administered_min' type='text' size='2' name='administered_min' 
-			value='<?php echo $administered_min ? htmlspecialchars( $administered_min, ENT_QUOTES) :  date("i"); ?>'
-    		title='<?php echo xla('Event start time min'); ?>' />
-		&nbsp;
-   		<select id='administered_ampm' name='form_ampm' title='<?php echo xla("Note: 12:00 noon is PM, not AM"); ?>'>
-			<?php  
-				if (!empty($administered_ampm) && $administered_ampm == 'am') {
-					$ampm = '1';
-				}
-				else if (!empty($administered_ampm) && $administered_ampm == 'pm') {
-					$ampm = '2';
-				}
-				else if (empty($administered_ampm) && date('a') ==  'am') {
-					$ampm = '1';
-				}
-				else {
-					$ampm = '2';
-				}
-			?>
-    		<option value='1'><?php echo xlt('AM'); ?></option>
-    		<option value='2'<?php if ($ampm == '2') echo " selected" ?>><?php echo xlt('PM'); ?></option>
-   		</select>	  
+       <td><input type='text' size='14' name="administered_date" id="administered_date"
+    		value='<?php echo $administered_date ? htmlspecialchars( $administered_date, ENT_QUOTES) : date('Y-m-d H:i'); ?>'
+    		title='<?php echo htmlspecialchars( xl('yyyy-mm-dd Hours(24):minutes'), ENT_QUOTES); ?>'
+    		onKeyUp='datekeyup(this,mypcc)' onBlur='dateblur(this,mypcc);'
+    		/>
+         	<img src='<?php echo $rootdir; ?>/pic/show_calendar.gif' align='absbottom' width='24' height='22'
+    			id='img_administered_date' border='0' alt='[?]' style='cursor:pointer;cursor:hand'
+    			title='<?php echo htmlspecialchars( xl('Click here to choose a date'), ENT_QUOTES); ?>'>
 		</td>
      </tr>
    </table></td>
@@ -424,15 +365,19 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
         </tr>
         <tr>
           <td align="right" class='text'><?php echo htmlspecialchars( xl('Route'), ENT_NOQUOTES); ?></td>
-          <td><span class="text">
+          <td><!--<span class="text">
             <input class='text' type='text' name="immuniz_route" size="25" value="<?php echo htmlspecialchars( $immuniz_route, ENT_QUOTES); ?>">
-          </span></td>
+          </span>-->
+		  	<?php echo generate_select_list('immuniz_route', 'drug_route', $immuniz_route, 'Select Route', 'Unassigned');?>		  
+		  </td>
         </tr>
         <tr>
           <td align="right" class='text'><?php echo htmlspecialchars( xl('Administration Site'), ENT_NOQUOTES); ?></td>
-          <td><span class="text">
+          <td><!--<span class="text">
             <input class='text' type='text' name="immuniz_admin_ste" size="25" value="<?php echo htmlspecialchars( $immuniz_admin_ste, ENT_QUOTES); ?>">
-          </span></td>
+          </span>-->
+		  	<?php echo generate_select_list('immuniz_admin_ste', 'proc_body_site', $immuniz_admin_ste, 'Select Administration Site', 'Unassigned');?>
+		  </td>
         </tr>
         <tr>
           <td align="right" class='text'>
@@ -487,11 +432,14 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
                 ",i1.manufacturer ,i1.lot_number ".
                 ",ifnull(concat(u.lname,', ',u.fname),'Other') as administered_by ".
                 ",i1.education_date ,i1.note ".
-				",i1.amount_administered, i1.amount_administered_unit, i1.route, i1.administration_site, i1.added_erroneously".
-                " from immunizations i1 ".
+				",i1.amount_administered, l_options_d_unit.title as 'drug_unit', l_options_route.title as 'drug_route', l_options_admin_site.title as 'admin_site', i1.added_erroneously".
+                " from immunizations i1".
                 " left join users u on i1.administered_by_id = u.id ".
                 " left join code_types ct on ct.ct_key = 'CVX' ".
-                " left join codes c on c.code_type = ct.ct_id AND i1.cvx_code = c.code ".
+                " left join codes c on c.code_type = ct.ct_id AND i1.cvx_code = c.code ".		
+				" left join list_options l_options_d_unit on i1.amount_administered_unit = l_options_d_unit.option_id AND l_options_d_unit.list_id = 'drug_units' ".
+				" left join list_options l_options_route on i1.route = l_options_route.option_id AND l_options_route.list_id = 'drug_route' ".
+				" left join list_options l_options_admin_site on i1.administration_site = l_options_admin_site.option_id AND l_options_admin_site.list_id = 'proc_body_site' ".											
                 " where i1.patient_id = ? ".
                 " order by ";
         if ($sortby == "vacc") { 
@@ -504,7 +452,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 			$isError = $row['added_erroneously'];
 			
 			if ($isError) {
-				$tr_title = 'title="' . $added_error_message . '"';
+				$tr_title = 'title="' . attr($added_error_message) . '"';
 			} else {
 				$tr_title = "";
 			}
@@ -540,8 +488,8 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 			
             echo "<td>" . $del_tag_open . $vaccine_display . $del_tag_close . "</td>";
 			
-			$administered_date = date('Y-m-d h:iA', strtotime($row["administered_date"]));
-			$route_val = $row["route"];
+			$administered_date = date('Y-m-d H:i', strtotime($row["administered_date"]));
+			/*$route_val = $row["admin_route.title"];
 			if (strlen($route_val) > 4) {
 				$route_val = substr($route_val, 0, 4) . '...';
 			}
@@ -549,20 +497,17 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 			$admin_ste_val = $row["administration_site"];
 			if (strlen($admin_ste_val) > 16) {
 				$admin_ste_val = substr($admin_ste_val, 0, 16) . '...';
-			}			
-
-            //echo "<td>" . htmlspecialchars( $row["administered_date"], ENT_NOQUOTES) . "</td>";
-			//echo "<td>" . htmlspecialchars( $administered_date . ' ' . $adminstered_hour . ':' . $administered_min . $administered_ampm , ENT_NOQUOTES) . "</td>";
+			}*/			
 						
 			echo "<td>" . $del_tag_open . htmlspecialchars( $administered_date , ENT_NOQUOTES) . $del_tag_close . "</td>";
-			echo "<td>" . $del_tag_open . htmlspecialchars( $row["amount_administered"] . " " . $row["amount_administered_unit"] , ENT_NOQUOTES) . $del_tag_close . "</td>";
+			echo "<td>" . $del_tag_open . htmlspecialchars( $row["amount_administered"] . " " . $row["drug_unit"] , ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["manufacturer"], ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["lot_number"], ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["administered_by"], ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["education_date"], ENT_NOQUOTES) . $del_tag_close . "</td>";
-			echo "<td>" . $del_tag_open . htmlspecialchars( $route_val, ENT_NOQUOTES) . $del_tag_close . "</td>";
-            echo "<td>" . $del_tag_open . htmlspecialchars( $admin_ste_val, ENT_NOQUOTES) . $del_tag_close . "</td>";
-			echo "<td>" . $del_tag_open. htmlspecialchars( $row["note"], ENT_NOQUOTES) . $del_tag_close . "</td>";
+			echo "<td>" . $del_tag_open . htmlspecialchars( $row["drug_route"], ENT_NOQUOTES) . $del_tag_close . "</td>";
+            echo "<td>" . $del_tag_open . htmlspecialchars( $row["admin_site"], ENT_NOQUOTES) . $del_tag_close . "</td>";
+			echo "<td>" . $del_tag_open . htmlspecialchars( $row["note"], ENT_NOQUOTES) . $del_tag_close . "</td>";
 			
 			if ($isError) {
 				$checkbox = "checked";
@@ -585,7 +530,8 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 
 <script language="javascript">
 /* required for popup calendar */
-Calendar.setup({inputField:"administered_date", ifFormat:"%Y-%m-%d", button:"img_administered_date"});
+/*Calendar.setup({inputField:"administered_date", ifFormat:"%Y-%m-%d", button:"img_administered_date"});*/
+Calendar.setup({inputField:"administered_date", ifFormat:"%Y-%m-%d %H:%M", button:"img_administered_date", showsTime:true});
 Calendar.setup({inputField:"immuniz_exp_date", ifFormat:"%Y-%m-%d", button:"img_immuniz_exp_date"});
 Calendar.setup({inputField:"education_date", ifFormat:"%Y-%m-%d", button:"img_education_date"});
 Calendar.setup({inputField:"vis_date", ifFormat:"%Y-%m-%d", button:"img_vis_date"});
