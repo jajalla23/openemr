@@ -330,32 +330,32 @@ CREATE TABLE IF NOT EXISTS `direct_message_log` (
 ) ENGINE=MyISAM;
 #EndIf
 
-#IfMissingColumn procedure_questions tips
+#IfNotColumnType immunizations administered_date datetime
 ALTER TABLE `immunizations`
-  MODIFY COLUMN administered_date datetime;
+  MODIFY COLUMN administered_date datetime DEFAULT NULL;
 #EndIf
 
-#IfMissingColumn procedure_questions tips
+#IfMissingColumn immunizations amount_administered_unit
 ALTER TABLE `immunizations`
   ADD COLUMN `amount_administered_unit` varchar(50) DEFAULT NULL;
 #EndIf
 
-#IfMissingColumn procedure_questions tips
+#IfMissingColumn immunizations expiration_date
 ALTER TABLE `immunizations`
-  ADD COLUMN `expiration_date` datetime DEFAULT NULL;
+  ADD COLUMN `expiration_date` date DEFAULT NULL;
 #EndIf
 
-#IfMissingColumn procedure_questions tips
+#IfMissingColumn immunizations route
 ALTER TABLE `immunizations`
   ADD COLUMN `route` varchar(100) DEFAULT NULL;
 #EndIf
 
-#IfMissingColumn procedure_questions tips
+#IfMissingColumn immunizations administration_site
 ALTER TABLE `immunizations`
   ADD COLUMN `administration_site` varchar(100) DEFAULT NULL;
 #EndIf
 
-#IfMissingColumn procedure_questions tips
+#IfMissingColumn immunizations added_erroneously
 ALTER TABLE `immunizations`
   ADD COLUMN `added_erroneously` tinyint(1) DEFAULT 0;
 #EndIf

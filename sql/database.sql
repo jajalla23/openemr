@@ -2238,7 +2238,7 @@ CREATE TABLE `immunizations` (
   `updated_by` bigint(20) default NULL,
   `amount_administered` int(11) DEFAULT NULL,			
   `amount_administered_unit` varchar(50) DEFAULT NULL,			
-  `expiration_date` datetime DEFAULT NULL,			
+  `expiration_date` date DEFAULT NULL,			
   `route` varchar(100) DEFAULT NULL,			
   `administration_site` varchar(100) DEFAULT NULL,			
   `added_erroneously` tinyint(1) NOT NULL DEFAULT '0',  

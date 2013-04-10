@@ -11,11 +11,7 @@ $fake_register_globals=false;
 include_once("../../globals.php");
 include_once("$srcdir/sql.inc");
 include_once("$srcdir/options.inc.php");
-
-//IF ADDED ERRONEOUSLY
-//$added_error_message = "This immunization information was entered into the wrong patient&apos;s record";
-$added_error_message = xl("Entered in Error");
-
+include_once("$srcdir/immunization_helper.php");
 
 if (isset($_GET['mode'])) {
     /*
@@ -23,7 +19,6 @@ if (isset($_GET['mode'])) {
 	 * WHEN BACK IS CLICKED, ANOTHER ITEM GETS ADDED
 	 */
 	
-    //if (($_GET['mode'] == "add" && $_SESSION['added_imm_id'] != trim($_GET['id'])) || !isset($_SESSION['added_imm_id']) || $_SESSION['added_imm_id'] == '') {
 	if ($_GET['mode'] == "add") {		
         $sql = "REPLACE INTO immunizations set 
                       id = ?,
@@ -73,7 +68,6 @@ if (isset($_GET['mode'])) {
         $immunization_id=$cvx_code=$manufacturer=$lot_number=$administered_by_id=$note=$id="";
         $administered_by=$vis_date="";
 		
-		//$_SESSION['added_imm_id'] = trim($_GET['id']);
     }
     elseif ($_GET['mode'] == "delete" ) {
         // log the event
@@ -82,36 +76,28 @@ if (isset($_GET['mode'])) {
         $sql="DELETE FROM immunizations WHERE id =? LIMIT 1";
         sqlStatement($sql, array($_GET['id']));
 		
-		//unset($_SESSION['added_imm_id']);	
     }
 	elseif ($_GET['mode'] == "added_error" ) {
 		$sql = "UPDATE immunizations " .
-			   "SET added_erroneously=" . trim($_GET['isError']) . " " .
+			   "SET added_erroneously=? "  .
 			   "WHERE id=?";
-		sqlStatement($sql, array($_GET['id']));
-		
-		//unset($_SESSION['added_imm_id']);
+		$sql_arg_array = array(
+							($_GET['isError'] === 'true'),
+							$_GET['id']
+						 );
+		sqlStatement($sql, $sql_arg_array);
 	}
     elseif ($_GET['mode'] == "edit" ) {
         $sql = "select * from immunizations where id = ?";
         $result = sqlQuery($sql, array($_GET['id']));
 		
-		$administered_date_time = strtotime($result['administered_date']);
-		$administered_date = date('Y-m-d H:i', $administered_date_time);
+		$administered_date = new DateTime($result['administered_date']);
+		$administered_date = $administered_date->format('Y-m-d H:i');
 		
 		$immuniz_amt_adminstrd = $result['amount_administered'];
-		
 		$drugunitselecteditem = $result['amount_administered_unit'];
-							 
-		
-        $immunization_id = $result['immunization_id'];
-		
-		if ($result['expiration_date'] != NULL) {
-			$immuniz_exp_date = date('Y-m-d', strtotime($result['expiration_date']));
-		} 
-		else {
-			$immuniz_exp_date = ' ';
-		}        
+        $immunization_id = $result['immunization_id'];	
+		$immuniz_exp_date = $result['expiration_date'];
 		
 		$cvx_code = $result['cvx_code'];
         $code_text = '';
@@ -134,8 +120,6 @@ if (isset($_GET['mode'])) {
         $note = $result['note'];
 		$isAddedError = $result['added_erroneously'];
 		
-		//unset($_SESSION['added_imm_id']);
-
 	//set id for page
 	$id = $_GET['id'];
 	
@@ -229,7 +213,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
       <table border=0 cellpadding=1 cellspacing=1>
 	  <?php
 	  	if ($isAddedError) {
-			echo "<tr><font color='red'><b>" . text($added_error_message) . "</b></font></tr>";
+			echo "<tr><font color='red'><b>" . xl("Entered in Error") . "</b></font></tr>";
 		}
 	  ?> 
 
@@ -288,7 +272,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
         <tr>
           <td align="right"><span class="text"><?php echo htmlspecialchars( xl('Immunization Expiration Date'), ENT_NOQUOTES); ?></span></td>
           <td class='text'><input type='text' size='10' name="immuniz_exp_date" id="immuniz_exp_date"
-    value='<?php echo $immuniz_exp_date ? htmlspecialchars( $immuniz_exp_date, ENT_QUOTES) : date('Y-m-d'); ?>'
+    value='<?php echo $immuniz_exp_date ? htmlspecialchars( $immuniz_exp_date, ENT_QUOTES) : ''; ?>'
     title='<?php echo htmlspecialchars( xl('yyyy-mm-dd'), ENT_QUOTES); ?>'
     onkeyup='datekeyup(this,mypcc)' onblur='dateblur(this,mypcc);'
     />
@@ -365,17 +349,13 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
         </tr>
         <tr>
           <td align="right" class='text'><?php echo htmlspecialchars( xl('Route'), ENT_NOQUOTES); ?></td>
-          <td><!--<span class="text">
-            <input class='text' type='text' name="immuniz_route" size="25" value="<?php echo htmlspecialchars( $immuniz_route, ENT_QUOTES); ?>">
-          </span>-->
+          <td>
 		  	<?php echo generate_select_list('immuniz_route', 'drug_route', $immuniz_route, 'Select Route', 'Unassigned');?>		  
 		  </td>
         </tr>
         <tr>
           <td align="right" class='text'><?php echo htmlspecialchars( xl('Administration Site'), ENT_NOQUOTES); ?></td>
-          <td><!--<span class="text">
-            <input class='text' type='text' name="immuniz_admin_ste" size="25" value="<?php echo htmlspecialchars( $immuniz_admin_ste, ENT_QUOTES); ?>">
-          </span>-->
+          <td>
 		  	<?php echo generate_select_list('immuniz_admin_ste', 'proc_body_site', $immuniz_admin_ste, 'Select Administration Site', 'Unassigned');?>
 		  </td>
         </tr>
@@ -428,31 +408,13 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
     </tr>
     
 <?php
-        $sql = "select i1.id ,i1.immunization_id, i1.cvx_code, i1.administered_date, c.code_text_short, c.code".
-                ",i1.manufacturer ,i1.lot_number ".
-                ",ifnull(concat(u.lname,', ',u.fname),'Other') as administered_by ".
-                ",i1.education_date ,i1.note ".
-				",i1.amount_administered, l_options_d_unit.title as 'drug_unit', l_options_route.title as 'drug_route', l_options_admin_site.title as 'admin_site', i1.added_erroneously".
-                " from immunizations i1".
-                " left join users u on i1.administered_by_id = u.id ".
-                " left join code_types ct on ct.ct_key = 'CVX' ".
-                " left join codes c on c.code_type = ct.ct_id AND i1.cvx_code = c.code ".		
-				" left join list_options l_options_d_unit on i1.amount_administered_unit = l_options_d_unit.option_id AND l_options_d_unit.list_id = 'drug_units' ".
-				" left join list_options l_options_route on i1.route = l_options_route.option_id AND l_options_route.list_id = 'drug_route' ".
-				" left join list_options l_options_admin_site on i1.administration_site = l_options_admin_site.option_id AND l_options_admin_site.list_id = 'proc_body_site' ".											
-                " where i1.patient_id = ? ".
-                " order by ";
-        if ($sortby == "vacc") { 
-            $sql .= " c.code_text_short, i1.immunization_id, i1.administered_date DESC"; 
-        }
-        else { $sql .= " administered_date desc"; }
-
-        $result = sqlStatement($sql, array($pid) );
+		$result = getImmunizationList($pid, $_GET['sortby'], true);
+			
         while($row = sqlFetchArray($result)) {
 			$isError = $row['added_erroneously'];
 			
 			if ($isError) {
-				$tr_title = 'title="' . attr($added_error_message) . '"';
+				$tr_title = 'title="' . xla("Entered in Error") . '"';
 			} else {
 				$tr_title = "";
 			}
@@ -475,7 +437,6 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
                 else {
                     $vaccine_display = generate_display_field(array('data_type'=>'1','list_id'=>'immunizations'), $row['immunization_id']);
                 }
-
             } 
 			
 			if ($isError) {
@@ -488,25 +449,21 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 			
             echo "<td>" . $del_tag_open . $vaccine_display . $del_tag_close . "</td>";
 			
-			$administered_date = date('Y-m-d H:i', strtotime($row["administered_date"]));
-			/*$route_val = $row["admin_route.title"];
-			if (strlen($route_val) > 4) {
-				$route_val = substr($route_val, 0, 4) . '...';
+			if ($row["administered_date"]) {
+				$administered_date_summary = new DateTime($row['administered_date']);
+				$administered_date_summary = $administered_date_summary->format('Y-m-d H:i');
+			} else {
+				$administered_date_summary = "";
 			}
 			
-			$admin_ste_val = $row["administration_site"];
-			if (strlen($admin_ste_val) > 16) {
-				$admin_ste_val = substr($admin_ste_val, 0, 16) . '...';
-			}*/			
-						
-			echo "<td>" . $del_tag_open . htmlspecialchars( $administered_date , ENT_NOQUOTES) . $del_tag_close . "</td>";
-			echo "<td>" . $del_tag_open . htmlspecialchars( $row["amount_administered"] . " " . $row["drug_unit"] , ENT_NOQUOTES) . $del_tag_close . "</td>";
+			echo "<td>" . $del_tag_open . htmlspecialchars( $administered_date_summary, ENT_NOQUOTES) . $del_tag_close . "</td>";
+			echo "<td>" . $del_tag_open . htmlspecialchars( $row["amount_administered"] . " " . generate_display_field(array('data_type'=>'1','list_id'=>'drug_units'), $row['amount_administered_unit']) , ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["manufacturer"], ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["lot_number"], ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["administered_by"], ENT_NOQUOTES) . $del_tag_close . "</td>";
             echo "<td>" . $del_tag_open . htmlspecialchars( $row["education_date"], ENT_NOQUOTES) . $del_tag_close . "</td>";
-			echo "<td>" . $del_tag_open . htmlspecialchars( $row["drug_route"], ENT_NOQUOTES) . $del_tag_close . "</td>";
-            echo "<td>" . $del_tag_open . htmlspecialchars( $row["admin_site"], ENT_NOQUOTES) . $del_tag_close . "</td>";
+			echo "<td>" . $del_tag_open . generate_display_field(array('data_type'=>'1','list_id'=>'drug_route'), $row['route']) . $del_tag_close . "</td>";			
+			echo "<td>" . $del_tag_open . generate_display_field(array('data_type'=>'1','list_id'=>'proc_body_site'), $row['administration_site']) . $del_tag_close . "</td>";
 			echo "<td>" . $del_tag_open . htmlspecialchars( $row["note"], ENT_NOQUOTES) . $del_tag_close . "</td>";
 			
 			if ($isError) {
@@ -530,7 +487,6 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
 
 <script language="javascript">
 /* required for popup calendar */
-/*Calendar.setup({inputField:"administered_date", ifFormat:"%Y-%m-%d", button:"img_administered_date"});*/
 Calendar.setup({inputField:"administered_date", ifFormat:"%Y-%m-%d %H:%M", button:"img_administered_date", showsTime:true});
 Calendar.setup({inputField:"immuniz_exp_date", ifFormat:"%Y-%m-%d", button:"img_immuniz_exp_date"});
 Calendar.setup({inputField:"education_date", ifFormat:"%Y-%m-%d", button:"img_education_date"});
@@ -574,12 +530,7 @@ $(document).ready(function(){
 var PrintForm = function(typ) {
     top.restoreSession();
     newURL='shot_record.php?output='+typ+'&sortby=<?php echo $sortby; ?>';
-    if (typ=="pdf") {
-        location.href=newURL;
-    }
-    else { // typ=html
-        window.open(newURL, '_blank', "menubar=1,toolbar=1,scrollbars=1,resizable=1,width=600,height=450");
-    }	
+	window.open(newURL, '_blank', "menubar=1,toolbar=1,scrollbars=1,resizable=1,width=600,height=450");
 }
 
 var SaveForm = function() {
@@ -600,9 +551,8 @@ var DeleteImm = function(imm) {
 }
 
 var ErrorImm = function(imm) {
-    //top.restoreSession();
-	//alert(imm.checked);
-    location.href='immunizations.php?mode=added_error&id='+imm.id+'&isError='+imm.checked;
+    top.restoreSession();
+	location.href='immunizations.php?mode=added_error&id='+imm.id+'&isError='+imm.checked;
 }
 
 //This is for callback by the find-code popup.
