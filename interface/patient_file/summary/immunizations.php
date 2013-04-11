@@ -112,7 +112,16 @@ if (isset($_GET['mode'])) {
         $manufacturer = $result['manufacturer'];
         $lot_number = $result['lot_number'];
         $administered_by_id = ($result['administered_by_id'] ? $result['administered_by_id'] : 0);
-        $administered_by = $result['administered_by'];
+
+		$administered_by = "";
+		if (!$result['administered_by'] && !$row['administered_by_id']) { 
+    		$stmt = "select concat(lname,', ',fname) as full_name ".
+            		"from users where ".
+            		"id=?";
+    		$user_result = sqlQuery($stmt, array($result['administered_by_id']));
+    		$administered_by = $user_result['full_name'];
+		}
+		
         $education_date = $result['education_date'];
         $vis_date = $result['vis_date'];
 		$immuniz_route = $result['route'];

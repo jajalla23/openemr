@@ -78,16 +78,7 @@ function convertToDataArray($data_array) {
 		$data[$current][xl('Lot') . "\n" . xl('Number')] = $row['lot_number'];
 
 		//Admin By
-		//$data[$current + 6] = $row['administered_by'];		
-		$sql = 'SELECT lname, fname ' .
-			   'FROM users ' .
-			   'WHERE id = ?';
-		$results = sqlStatement($sql,array($row['administered_by']));
-		$name = "";
-		while($row_adminby = sqlFetchArray($result)) {
-			$name = $row_adminby['lname'] . ", " . $row_adminby['fname'];
-		}
-		$data[$current][xl('Admin') . "\n" . xl('By')] = $name;
+		$data[$current][xl('Admin') . "\n" . xl('By')] = $row['administered_by'];
 		
 		//education date
 		$temp_date = new DateTime($row['education_date']);

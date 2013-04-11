@@ -1,4 +1,14 @@
 <?php
+/*
+Edited By Jan Jajalla 04-2013
+This function is to provide  a common code to be used by shot_record.php and immunizations 
+(or any other code that needs to pull immunization record)
+
+$pid = person id
+$sortby = field on which  the sql results would be sorted by
+$showError = true/false on whether to retrieve the records that were added erroneously
+
+*/
 
 function getImmunizationList($pid,$sortby,$showError) {
         $sql = "select i1.id ,i1.immunization_id, i1.cvx_code, i1.administered_date, c.code_text_short, c.code".
