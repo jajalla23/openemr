@@ -222,7 +222,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
       <table border=0 cellpadding=1 cellspacing=1>
 	  <?php
 	  	if ($isAddedError) {
-			echo "<tr><font color='red'><b>" . xl("Entered in Error") . "</b></font></tr>";
+			echo "<tr><font color='red'><b>" . xlt("Entered in Error") . "</b></font></tr>";
 		}
 	  ?> 
 

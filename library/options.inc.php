@@ -1,7 +1,7 @@
 <?php
 // Copyright (C) 2007-2010 Rod Roark <rod@sunsetsystems.com>
-// Copyright Â© 2010 by Andrew Moore <amoore@cpan.org>
-// Copyright Â© 2010 by "Boyd Stephen Smith Jr." <bss@iguanasuicide.net>
+// Copyright © 2010 by Andrew Moore <amoore@cpan.org>
+// Copyright © 2010 by "Boyd Stephen Smith Jr." <bss@iguanasuicide.net>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -116,7 +116,7 @@ function generate_form_field($frow, $currvalue) {
   $list_id_esc = htmlspecialchars( $list_id, ENT_QUOTES);
 
   // Added 5-09 by BM - Translate description if applicable
-  $description = htmlspecialchars(xl_layout_label($frow['description']), ENT_QUOTES);
+  $description = (isset($frow['description']) ? htmlspecialchars(xl_layout_label($frow['description']), ENT_QUOTES) : '');
 
   // added 5-2009 by BM to allow modification of the 'empty' text title field.
   //  Can pass $frow['empty_title'] with this variable, otherwise

@@ -335,6 +335,12 @@ ALTER TABLE `immunizations`
   MODIFY COLUMN administered_date datetime DEFAULT NULL;
 #EndIf
 
+#IfMissingColumn immunizations amount_administered
+ALTER TABLE `immunizations`
+  ADD COLUMN `amount_administered` int(11) DEFAULT NULL;
+#EndIf
+
+
 #IfMissingColumn immunizations amount_administered_unit
 ALTER TABLE `immunizations`
   ADD COLUMN `amount_administered_unit` varchar(50) DEFAULT NULL;
@@ -357,7 +363,7 @@ ALTER TABLE `immunizations`
 
 #IfMissingColumn immunizations added_erroneously
 ALTER TABLE `immunizations`
-  ADD COLUMN `added_erroneously` tinyint(1) DEFAULT 0;
+  ADD COLUMN `added_erroneously` tinyint(1) NOT NULL DEFAULT '0';
 #EndIf
 
 
