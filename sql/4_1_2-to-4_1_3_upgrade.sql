@@ -170,6 +170,10 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default, option_va
 UPDATE  `layout_options` SET  `data_type` =  '36' WHERE  `layout_options`.`form_id` =  'DEM' AND  `layout_options`.`field_id` =  'race' AND `layout_options`.`seq` =3;
 #EndIf
 
+#IfMissingColumn layout_options data_type
+UPDATE  `openemr`.`layout_options` SET  `data_type` =  '33' WHERE  `layout_options`.`form_id` =  'DEM' AND  `layout_options`.`field_id` =  'language' AND  `layout_options`.`seq` =1;
+#EndIf
+
 #IfNotRow2Dx2 list_options list_id language option_id afar title Afar seq 1 is_default 0 option_value 0 notes aar
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default, option_value, notes ) VALUES ('language', 'afar', 'Afar', 1, 0, 0, 'aar');
 #EndIf
