@@ -55,7 +55,6 @@ $datatypes = array(
   "33" => xl("Race and Ethnicity"),
   "34" => xl("NationNotes"),
   "35" => xl("Facilities"),
-  "36" => xl("Multiselect List Box")
 );
 
 function nextGroupOrder($order) {
