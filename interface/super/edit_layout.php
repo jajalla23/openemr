@@ -446,7 +446,8 @@ function writeFieldLine($linedata) {
       $linedata['data_type'] == 22 || $linedata['data_type'] == 23 ||
       $linedata['data_type'] == 25 || $linedata['data_type'] == 26 ||
       $linedata['data_type'] == 27 || $linedata['data_type'] == 32 ||
-      $linedata['data_type'] == 33 || $linedata['data_type'] == 34)
+      $linedata['data_type'] == 33 || $linedata['data_type'] == 34 ||
+      $linedata['data_type'] == 36)
     {
       $type = "";
       $disp = "style='display:none'";
@@ -475,16 +476,31 @@ function writeFieldLine($linedata) {
     }
     echo "</td>\n";
 
-    //Backup List
+    //Backup List Begin
     echo "  <td align='center' class='optcell'>";
+    
+    $type = "";
+    if($linedata['data_type'] !=  1 && $linedata['data_type'] != 21 &&
+	      $linedata['data_type'] != 22 && $linedata['data_type'] != 23 &&
+	      $linedata['data_type'] != 25 && $linedata['data_type'] != 26 &&
+	      $linedata['data_type'] != 27 && $linedata['data_type'] != 32 &&
+	      $linedata['data_type'] != 33 && $linedata['data_type'] != 34 &&
+	      $linedata['data_type'] != 36)
+    {
+    	$type = "style='display:none'";
+    } 
+    
     echo "<input type='text' name='fld[$fld_line_no][list_backup_id]' value='" .
-    htmlspecialchars($linedata['list_backup_id'], ENT_QUOTES) . "' size='3' maxlength='10' class='optin listid' style='cursor: pointer' />";
+    	htmlspecialchars($linedata['list_backup_id'], ENT_QUOTES) . "'" . $type .
+    	"' size='3' maxlength='10' class='optin listid' style='cursor: pointer' />";
     echo "</td>\n";
     
     echo "  <td align='center' class='optcell'>";
     echo "<input type='text' name='fld[$fld_line_no][titlecols]' value='" .
          htmlspecialchars($linedata['titlecols'], ENT_QUOTES) . "' size='3' maxlength='10' class='optin' />";
+    
     echo "</td>\n";
+    //Backup List End
   
     echo "  <td align='center' class='optcell'>";
     echo "<input type='text' name='fld[$fld_line_no][datacols]' value='" .
