@@ -102,6 +102,18 @@ switch ($action) {
 		deletePlan($plan_id, $plan_pid);
 		
 		break;
+
+        case "togglePlanStatus":
+                 $plan_id = $_GET["plan_id"];
+                 $active_inactive = $_GET["plan_status"];
+                 if ($active_inactive == 'deactivate') {
+                      $nm_flag = 0;
+                    } else {
+                      $nm_flag = 1;
+                    }
+                 togglePlanStatus($plan_id, $nm_flag);
+
+                 break;
 		
 	case "getPlanStatus":
 		$plan_id = $_GET["plan_id"];
@@ -166,7 +178,7 @@ function getRulesNotInPlan($plan_id) {
 	$sql_st = "SELECT lst_opt.option_id as rule_option_id, lst_opt.title as rule_title " .
 				"FROM `clinical_rules` clin_rules " .
 				"JOIN `list_options` lst_opt ON lst_opt.option_id = clin_rules.id " .
-				"WHERE clin_rules.cqm_flag = 0 AND clin_rules.amc_flag = 0 AND lst_opt.option_id NOT IN " .
+				"WHERE clin_rules.cqm_flag = 0 AND lst_opt.option_id NOT IN " .
 					"( " .
 					"SELECT lst_opt.option_id " .
 					"FROM `clinical_plans_rules` cpr " .
@@ -261,9 +273,18 @@ function deletePlan($plan_id, $plan_pid) {
 	$res = sqlStatement($sql_st, array($plan_id, $plan_pid));
 }
 
-function togglePlanStatus($plan_id, $isActive) {
-	//TODO:
-	
+function togglePlanStatus($plan_id, $nm_flag) {
+	$pid_val = 0;
+	$sql_st = "UPDATE clinical_plans SET " .
+                     "normal_flag = ? ".
+                     "WHERE id = ? AND pid = ? ";
+        sqlStatement($sql_st, array($nm_flag, $plan_id, $pid_val));
+        $togglePlanError = getSqlLastError();
+        if (!togglePlanError === NULL) {
+           trigger_error("sqlStatement fail !!", 512); }
+        else {
+             // tell user plan has being updated
+        }
 }
 
 function submitChanges($plan_id, $added_rules, $removed_rules) {
