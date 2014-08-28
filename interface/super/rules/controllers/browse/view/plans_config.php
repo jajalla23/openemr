@@ -290,6 +290,8 @@
 		$('#new_plan_container')
 			.append('<label>Plan Name: </label>')
 			.append('<input id="new_plan_name" type="text" name="new_plan_name">');
+
+		$("#cdr-rules_cont").removeClass("overlay");
 	}
 
 	$togglePlanStatus = function (isActive) {
