@@ -56,3 +56,11 @@ body.loading .modal {
 	box-shadow: 0 0 10px #ccc; 
 	
 }
+
+.overlay {	
+    z-index:1001;
+    background-color: transparent; 
+    opacity:0.7; 
+    filter: alpha(opacity=00); 
+    pointer-events:none;
+}

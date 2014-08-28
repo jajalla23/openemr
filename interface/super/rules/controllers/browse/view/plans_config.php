@@ -46,18 +46,17 @@
 			);
 		});
 
-		//Deactivate Plan
-		$("#cdr-status-deactivate").click(function() {
-			$deactivatePlan();
-			$togglePlanStatus(false);
+		//Update Plan status
+		$("#cdr-status").click(function() {
+                        if (window.buttonStatus == "active")
+                            {
+                               $deactivatePlan();
+                               $togglePlanStatus(false);
+                             } else {
 
-		});
-
-		//Activate Plan
-		$("#cdr-status-activate").click(function() {
-			$activatePlan();
-			$togglePlanStatus(true);
-
+			        $activatePlan();
+			        $togglePlanStatus(true);
+                             }
 		});
 
 		//Cancel
@@ -318,25 +317,23 @@
 	}
 
 	$activatePlan = function() {
-		$("#cdr-status-activate").attr("disabled", true);
-		$('#cdr-status-activate').text('Active');
-		
-		$("#cdr-status-deactivate").removeAttr("disabled");
-		$('#cdr-status-deactivate').text('Deactivate');
+        $("#plan-status-label").text("Status: Active");
+        window.buttonStatus = "active";
+        $("#cdr-status").removeAttr("disabled");
+        $("#cdr-status").text('Deactivate');
 
-
-		$("#cdr-button-submit").attr('disabled', false); 
+		$("#cdr-rules_cont").removeClass("overlay");
 	}
 
 	$deactivatePlan = function() {
-		$("#cdr-status-deactivate").attr("disabled", true);
-		$('#cdr-status-deactivate').text('Inactive');
+        $("#plan-status-label").text("Status: Inactive");
+        window.buttonStatus = "inactive";
+        $("#cdr-status").removeAttr("disabled");
+        $("#cdr-status").text('Activate');
 
-		$("#cdr-status-activate").removeAttr("disabled");
-		$('#cdr-status-activate').text('Activate');
+		$("#cdr-rules_cont").addClass("overlay"); 
+	}	
 
-		$("#cdr-button-submit").attr('disabled', true); 
-	}
 </script>
 
 <div class="cdr-mappings">
@@ -356,17 +353,19 @@
 		<div id="new_plan_container"></div>
 		<div id="cdr_hide_show-div" style="display: none;">
 			<div id="plan_status_div" class="plan-status_div">
-				<label class="plan-status-label">Status:</label>
-				<button id='cdr-status-activate' disabled>Active</button>
-	      		<button id='cdr-status-deactivate'>Deactivate</button>
-			</div>
+				<label id='plan-status-label'>Status:</label> <!-- roberto -->
+				<button id='cdr-status' disable>Activate</button>
+ 			</div>
 			<br/>
-			<div id="cdr_rules" class="cdr-rules-class"></div>   	
+			
+			<div id="cdr-rules_cont">
+				<div id="cdr_rules" class="cdr-rules-class"></div>   	
 	      	
-	      	<div id="cdr_buttons_div" class="cdr-buttons-class">
-	      		<button id='cdr-button-cancel'>Cancel</button>
-	      		<button id='cdr-button-submit'>Submit</button>
-	      	</div>
+		      	<div id="cdr_buttons_div" class="cdr-buttons-class">
+		      		<button id='cdr-button-cancel'>Cancel</button>
+		      		<button id='cdr-button-submit'>Submit</button>
+		      	</div>
+		    </div>
       	</div>
 	</div>
 </div>
