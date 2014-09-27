@@ -17,7 +17,7 @@
 <script language="javascript" src="<?php js_src('/cdr-multiselect/plugins/localisation/jquery.localisation-min.js') ?>"></script>
 <script language="javascript" src="<?php js_src('/cdr-multiselect/plugins/scrollTo/jquery.scrollTo-min.js') ?>"></script>
 <script language="javascript" src="<?php js_src('/cdr-multiselect/ui.multiselect.js') ?>"></script>
-<script language="javascript" src="<?php js_src('/cdr-multiselect/locale/cdr-multiselect-cdr.js') ?>"></script>
+<script language="javascript" src="<?php js_src('/cdr-multiselect/locale/ui-multiselect-cdr.js') ?>"></script>
 <script language="javascript" src="<?php js_src('list.js') ?>"></script>
 <script language="javascript" src="<?php js_src('jQuery.fn.sortElements.js') ?>"></script>
 
