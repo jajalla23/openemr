@@ -17,17 +17,17 @@
 <script language="javascript" src="<?php js_src('/cdr-multiselect/plugins/localisation/jquery.localisation-min.js') ?>"></script>
 <script language="javascript" src="<?php js_src('/cdr-multiselect/plugins/scrollTo/jquery.scrollTo-min.js') ?>"></script>
 <script language="javascript" src="<?php js_src('/cdr-multiselect/ui.multiselect.js') ?>"></script>
-<script language="javascript" src="<?php js_src('/cdr-multiselect/locale/ui-multiselect-cdr.js') ?>"></script>
+<script language="javascript" src="<?php js_src('/cdr-multiselect/locale/cdr-multiselect-cdr.js') ?>"></script>
 <script language="javascript" src="<?php js_src('list.js') ?>"></script>
 <script language="javascript" src="<?php js_src('jQuery.fn.sortElements.js') ?>"></script>
 
 <script type="text/javascript">
 	$(document).ready(function() {	
 		//load plans	
-		$("#cdr-plans").load('<?php library_src('RulesPlanMappingEventHandlers.php') ?>');
+		$("#cdr-plans").load('<?php library_src('RulesPlanMappingEventHandlers_ajax.php') ?>');
 		
 	    $.post(
-	    	'<?php echo  _base_url() . '/library/RulesPlanMappingEventHandlers.php?action=getNonCQMPlans'; ?>'
+	    	'<?php echo  _base_url() . '/library/RulesPlanMappingEventHandlers_ajax.php?action=getNonCQMPlans'; ?>'
 	    )
 	    .done(function(resp) {
 	        var data = $.parseJSON(resp);
@@ -81,7 +81,7 @@
 				$.post
 		    	(
 			    	'<?php echo  _base_url() . 
-			    			"/library/RulesPlanMappingEventHandlers.php?action=deletePlan&plan_id="; ?>' + selected_plan
+			    			"/library/RulesPlanMappingEventHandlers_ajax.php?action=deletePlan&plan_id="; ?>' + selected_plan
 			    			+ '&plan_pid=' + selected_plan_pid							
 				)
 				.done(function(resp) {
@@ -153,7 +153,7 @@
 			var dataString = JSON.stringify(postData);
 
 			$.post( 
-				'<?php echo  _base_url() . '/library/RulesPlanMappingEventHandlers.php?action=commitChanges'; ?>', 
+				'<?php echo  _base_url() . '/library/RulesPlanMappingEventHandlers_ajax.php?action=commitChanges'; ?>', 
 				dataString)
 			.done(function(resp) {
 				var obj = $.parseJSON(resp);
@@ -232,7 +232,7 @@
 		    $.post
 		    	(
 			    	'<?php echo  _base_url() . 
-			    			'/library/RulesPlanMappingEventHandlers.php?action=getRulesInAndNotInPlan&plan_id='; ?>' + selected_plan								
+			    			'/library/RulesPlanMappingEventHandlers_ajax.php?action=getRulesInAndNotInPlan&plan_id='; ?>' + selected_plan								
 				)
 				.done(function(resp) {
 			        var data = $.parseJSON(resp);
@@ -267,7 +267,7 @@
 		$.post
     	(
 	    	'<?php echo  _base_url() . 
-	    			'/library/RulesPlanMappingEventHandlers.php?action=getPlanStatus&plan_id='; ?>' + selected_plan
+	    			'/library/RulesPlanMappingEventHandlers_ajax.php?action=getPlanStatus&plan_id='; ?>' + selected_plan
 	    			+ '&plan_pid=' + selected_plan_pid
 		)
 		.done(function(resp) {
@@ -313,7 +313,7 @@
                var dataStringToggle = JSON.stringify(postToggle);
 
 		$.post(
-	  '<?php echo  _base_url() . '/library/RulesPlanMappingEventHandlers.php?action=togglePlanStatus'; ?>'
+	  '<?php echo  _base_url() . '/library/RulesPlanMappingEventHandlers_ajax.php?action=togglePlanStatus'; ?>'
                , dataStringToggle).done(function(resp) {
                         var obj = $.parseJSON(resp);
                            if (obj == '007')

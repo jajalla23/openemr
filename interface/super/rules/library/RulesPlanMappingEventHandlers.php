@@ -1,152 +1,29 @@
 <?php
-require_once( dirname(__FILE__) . "/../../../globals.php" );
-require_once( $GLOBALS['srcdir'] . "/log.inc");
-require_once( $GLOBALS['srcdir'] . "/sql.inc");
+/**
+ * library/RulesPlanMappingEventHandlers.php database interaction for admin-gui rules plan mappings.
+ *
+ * Functions to allow safe database modifications
+ * during changes to rules-plan mapping in Admin UI.
+ *
+ * Copyright (C) 2008-2012 Rod Roark <rod@sunsetsystems.com>
+ *
+ * LICENSE: This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://opensource.org/licenses/gpl-license.php>;.
+ *
+ * @package OpenEMR
+ * @author  Rod Roark <rod@sunsetsystems.com>
+ * @author  Brady Miller <brady@sparmy.com>
+ * @link    http://www.open-emr.org
+ */
 
-$action = $_GET["action"];
-switch ($action) {
-	case "getNonCQMPlans":
-		$plans = getNonCQMPlans();
-
-		echo json_encode($plans);
-		
-		break;
-		
-	case "getRulesOfPlan":
-		$rules = getRulesInPlan($_GET["plan_id"]);
-		
-		$rules_list = array();
-		foreach ($rules as $key => $value) {
-			$rule_info = array('rule_id'=>$key, 'rule_title'=>$value);
-			array_push($rules_list,$rule_info);
-		}
-		
-		echo json_encode($rules_list);
-		
-		break;
-	
-	case "getRulesNotInPlan":
-		$rules = getRulesNotInPlan($_GET["plan_id"]);
-		
-		$rules_list = array();
-		foreach ($rules as $key => $value) {
-			$rule_info = array('rule_id'=>$key, 'rule_title'=>$value);
-			array_push($rules_list,$rule_info);
-		}
-		
-		echo json_encode($rules_list);
-		
-		break;
-		
-	case "getRulesInAndNotInPlan":
-		$rules = getRulesInPlan($_GET["plan_id"]);
-		
-		$rules_list = array();
-		foreach ($rules as $key => $value) {
-			$rule_info = array('rule_id'=>$key, 'rule_title'=>$value, 'selected'=>'true');
-			array_push($rules_list,$rule_info);
-		}		
-		
-		$rules = getRulesNotInPlan($_GET["plan_id"]);
-		foreach ($rules as $key => $value) {
-			$rule_info = array('rule_id'=>$key, 'rule_title'=>$value, 'selected'=>'false');
-			array_push($rules_list,$rule_info);
-		}
-		
-		echo json_encode($rules_list);
-		
-		break;
-		
-	case "commitChanges":
-		$data = json_decode(file_get_contents('php://input'), true);
-		
-		$plan_id = $data['plan_id'];
-		$added_rules = $data['added_rules'];
-		$removed_rules = $data['removed_rules'];
-		$plan_name = $data['plan_name'];
-		
-		if ($plan_id == 'add_new_plan') {
-			try {
-				$plan_id = addNewPlan($plan_name, $added_rules);
-			} catch (Exception $e) {
-				if ($e->getMessage() == "002") {
-					//Plan Name Taken
-					$status = array('status_code'=>'002', 'status_message'=>'Plan Name Already Exists!', 'plan_id'=>$plan_id, 'plan_title'=>$plan_name);
-					echo json_encode($status);
-						
-				} else if ($e->getMessage() == "003") {
-					//Already in list options
-					$status = array('status_code'=>'003', 'status_message'=>'Plan Already in list_options', 'plan_id'=>$plan_id, 'plan_title'=>$plan_name);
-					echo json_encode($status);
-											
-				} else {
-					$status = array('status_code'=>'001', 'status_message'=>$e->getMessage(), 'plan_id'=>$plan_id, 'plan_title'=>$plan_name);
-					echo json_encode($status);
-									}
-					
-				break;
-			}
-		} else if (strlen($plan_id) > 0) {
-			submitChanges($plan_id, $added_rules, $removed_rules);
-		}
-		
-		$status = array('status_code'=>'000', 'status_message'=>'Success', 'plan_id'=>$plan_id, 'plan_title'=>$plan_name);
-		echo json_encode($status);
-		
-		break;
-		
-	case "deletePlan":
-		$plan_id = $_GET["plan_id"];
-		$plan_pid = $_GET["plan_pid"];
-		deletePlan($plan_id, $plan_pid);
-		
-		break;
-
-       case "togglePlanStatus":
-                $dataToggle  = json_decode(file_get_contents('php://input'), true);
-
-                $plan_id_toggle = $dataToggle['selected_plan'];
-                $plan_pid_toggle = $dataToggle['selected_plan_pid'];
-                $active_inactive = $dataToggle['plan_status'];
-                if ($active_inactive == 'deactivate') {
-                     $nm_flag = 0;
-                   } else {
-                     $nm_flag = 1;
-                   }
-                try {
-                       togglePlanStatus($plan_id_toggle, $nm_flag);
-                } catch (Exception $e) {
-                     if ($e->getMessage() == "007")
-                       {
-                        $code_back = "007";
-                        echo json_encode($code_back);
-                       }
-                     if  ($e->getMessage() == "002") {
-                         $code_back = "002";
-                         echo json_encode($code_back);
-                  }
-	       	}
-               break;
-           
-	case "getPlanStatus":
-		$plan_id = $_GET["plan_id"];
-		$plan_pid = $_GET["plan_pid"];
-		
-		$isPlanActive = isPlanActive($plan_id, $plan_pid);
-		
-		$isPlanActive = ($isPlanActive) ? 1 : 0	;
-		
-		$plan_status = array('plan_id'=>$plan_id, 'plan_pid'=>$plan_pid, 'is_plan_active'=>$isPlanActive);
-		echo json_encode($plan_status);
-		
-		break;
-		
-	default:
-		break;
-}
-
-
-//Helper Functions
 function getNonCQMPlans() {	
 	$plans = array();
 	
@@ -267,7 +144,8 @@ function addNewPlan($plan_name, $plan_rules) {
 	return $plan_id;
 }
 
-function deletePlan($plan_id, $plan_pid) {
+function deletePlan($plan_id) {
+	$plan_pid = 0;
 	$sql_st = "DELETE FROM `clinical_plans` WHERE `clinical_plans`.`id` = ? AND `clinical_plans`.`pid` = ?;";
 	$res = sqlStatement($sql_st, array($plan_id, $plan_pid));
 	
@@ -320,12 +198,20 @@ function submitChanges($plan_id, $added_rules, $removed_rules) {
 	
 }
 
-function addRulesToPlan($plan_id, $list_of_rules) {
+function addRulesToPlan($plan_id, $list_of_rules) {	
+	//Insert
 	$sql_st = "INSERT INTO `clinical_plans_rules` (`plan_id`, `rule_id`) " .
 				"VALUES (?, ?);";
 	
 	foreach ($list_of_rules as $rule) {
-		$res = sqlStatement($sql_st, array($plan_id, $rule));
+		//Check if rule already exists in plan
+		$sql_st_check = "SELECT * FROM `clinical_plans_rules` " .
+						"WHERE `plan_id` = ? and `rule_id` = ?";
+		$res_check = sqlStatement($sql_st_check, array($plan_id, $rule));
+		$row = sqlFetchArray($res_check);
+		if ($row == NULL) {
+			$res = sqlStatement($sql_st, array($plan_id, $rule));
+		}
 	}
 }
 
@@ -357,7 +243,8 @@ function generatePlanID() {
 	return $plan_id;
 }
 
-function isPlanActive($plan_id, $plan_pid) {
+function isPlanActive($plan_id) {
+	$plan_pid = 0;
 	$sql_st = "SELECT `normal_flag` " . 
 				"FROM `clinical_plans` " . 
 				"WHERE `id` = ? AND `pid` = ?;";
