@@ -100,7 +100,7 @@ switch ($action) {
 				if ($e->getMessage() == "002") {
 					//Plan Name Taken
 					$status_code = '002';
-					$status_mssg = out(xl( 'Plan Name Already Exists!' ));
+					$status_mssg = out(xl( 'Plan Name Already Exists' ));
 
 				} else if ($e->getMessage() == "003") {
 					//Already in list options
