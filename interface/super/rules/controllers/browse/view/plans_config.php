@@ -380,7 +380,7 @@
 				<option id="divider" value="divider" disabled/>
 				<option id="add_new_plan" value="add_new_plan"><?php echo out( xl( 'ADD NEW PLAN' )); ?></option>
 			</select>
-			<input title=<?php echo out(xl('Delete Plan')); ?> id="delete_plan" class="delete_button" type="image" style="display: none;"/>
+			<input title="<?php echo out(xl('Delete Plan')); ?>" id="delete_plan" class="delete_button" type="image" style="display: none;"/>
 		</div>	
 		<div id="new_plan_container"></div>
 		<div id="cdr_hide_show-div" style="display: none;">
